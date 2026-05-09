@@ -16,17 +16,18 @@
     }
 
     html, body {
-      width: 360px;
-      height: 800px;
-      margin: 0 auto;
+      width: 100%;
+      height: 100%;
+      margin: 0;
       overflow: hidden; /* snap container handles scroll */
       background: #000;
     }
 
     /* ── SNAP CONTAINER ── */
     .snap-container {
-      width: 360px;
-      height: 800px;
+      width: min(100vw, 430px);
+      height: 100dvh;
+      margin: 0 auto;
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
       -webkit-overflow-scrolling: touch;
@@ -37,8 +38,8 @@
     /* ── SECTION BASE ── */
     section {
       scroll-snap-align: start;
-      width: 360px;
-      height: 800px;
+      width: min(100vw, 430px);
+      height: 100dvh;
       position: relative;
       overflow: hidden;
       display: flex;
@@ -152,6 +153,16 @@
       color: #fff;
     }
 
+    .speaker-bio-bubble .label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.86);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
     .speaker-bio-bubble .role {
       margin-top: 6px;
       font-family: 'DM Sans', sans-serif;
@@ -174,7 +185,7 @@
     .event-meta {
       position: absolute;
       left: 20px;
-      top: 170px;
+      top: 210px;
       z-index: 3;
       padding: 8px 10px;
       background: rgba(3, 13, 26, 0.5);
@@ -205,7 +216,7 @@
     .event-desc {
       position: absolute;
       left: 16px;
-      top: 250px;
+      top: 290px;
       width: 168px;
       z-index: 3;
       padding: 10px 12px;
@@ -244,7 +255,7 @@
       position: absolute;
       left: 16px;
       right: 16px;
-      bottom: 46px;           /* above scroll hint */
+      bottom: calc(46px + env(safe-area-inset-bottom)); /* above scroll hint */
       display: flex;
       align-items: center;
       gap: 14px;
@@ -285,7 +296,7 @@
     /* ── SCROLL HINT: very bottom ── */
     .scroll-hint {
       position: absolute;
-      bottom: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
       left: 0; right: 0;
       display: flex;
       flex-direction: column;
@@ -296,8 +307,8 @@
 
     .scroll-hint span {
       font-family: 'DM Sans', sans-serif;
-      font-size: 0.58rem;
-      color: rgba(255,255,255,0.35);
+      font-size: 0.72rem;
+      color: #ffffff;
       letter-spacing: 0.16em;
       text-transform: uppercase;
     }
@@ -520,6 +531,7 @@
         <img src="speaker2.png" alt="Faiz Fablillah" />
       </div>
       <div class="speaker-bio-bubble" aria-label="Speaker profile text">
+        <div class="label">Speaker details:</div>
         <div class="name">Faiz Fablillah</div>
         <div class="role">Senior Practitioner, Data &amp; AI Governance | DAMA Board Member</div>
         <div class="exp">15+ years in Oil &amp; Gas, Banking, Manufacturing &amp; Financial Regulatory Sector</div>
@@ -546,7 +558,7 @@
 
       <!-- SCROLL NUDGE -->
       <div class="scroll-hint">
-        <span>Register below</span>
+        <span>OR Swipe down to register</span>
         <div class="chevron-down"></div>
       </div>
 
