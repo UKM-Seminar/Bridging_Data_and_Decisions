@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bridging Data and Decisions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan: #00d4ff;
+      --white: #ffffff;
+      --off-white: rgba(255,255,255,0.72);
+      --dark: #030d1a;
+    }
+
+    html, body {
+      width: 360px;
+      height: 800px;
+      margin: 0 auto;
+      overflow: hidden; /* snap container handles scroll */
+      background: #000;
+    }
+
+    /* ── SNAP CONTAINER ── */
+    .snap-container {
+      width: 360px;
+      height: 800px;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .snap-container::-webkit-scrollbar { display: none; }
+
+    /* ── SECTION BASE ── */
+    section {
+      scroll-snap-align: start;
+      width: 360px;
+      height: 800px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ════════════════════════════
+       SECTION 1 — EVENT
+    ════════════════════════════ */
+    #s1 {
+      justify-content: flex-start;
+    }
+
+    /* Background fills entire section */
+    .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      z-index: 0;
+    }
+
+    /* Dark gradient bottom-fade so cards are readable */
+    .bg-fade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(3,13,26,0.10) 0%,
+        rgba(3,13,26,0.05) 25%,
+        rgba(3,13,26,0.45) 55%,
+        rgba(3,13,26,0.88) 80%,
+        rgba(3,13,26,0.97) 100%
+      );
+      z-index: 1;
+    }
+
+    /* All real content sits above bg — use absolute positioning for precise control */
+    .s1-content {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── TITLE: top of screen ── */
+    .title-wrap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 0 0;
+    }
+
+    .title-wrap img {
+      width: 104%;
+      margin-left: -2%;
+      display: block;
+      filter: brightness(1.05) drop-shadow(0 2px 12px rgba(0,0,0,0.8));
+    }
+
+    /* ── SPEAKER: centred in the middle band ── */
+    /* Title.png is roughly 120px tall with padding → speaker starts ~150px from top */
+    .speaker-wrap {
+      position: absolute;
+      top: 100px;
+      right: -16px;
+      left: auto;
+      width: 280px;
+      /* stops 160px from bottom: 110 QR card + 30 hint + 20 gap */
+      bottom: 160px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+
+    .speaker-wrap img {
+      /* Speaker.png has big black padding — negative margin pulls the real photo up */
+      width: 100%;
+      /* crop the black padding: the actual figure sits roughly in the top-60% of the image */
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+      filter: drop-shadow(0 8px 32px rgba(0,0,0,0.5));
+    }
+
+    
+    .speaker-bio-bubble {
+      position: absolute;
+      right: 18px;
+      bottom: 240px;
+      width: 206px;
+      z-index: 4;
+      padding: 10px 12px;
+      background: #381c82;
+      border: 1px solid rgba(170, 130, 255, 0.62);
+      border-radius: 14px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+    }
+
+    .speaker-bio-bubble .name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.55rem;
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+
+    .speaker-bio-bubble .role {
+      margin-top: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.61rem;
+      line-height: 1.38;
+      color: rgba(255,255,255,0.96);
+      font-weight: 600;
+    }
+
+    .speaker-bio-bubble .exp {
+      margin-top: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      line-height: 1.36;
+      color: rgba(255,255,255,0.9);
+      font-weight: 500;
+    }
+
+    /* ── QR ROW: fixed to bottom ── */
+    .event-meta {
+      position: absolute;
+      left: 20px;
+      top: 170px;
+      z-index: 3;
+      padding: 8px 10px;
+      background: rgba(3, 13, 26, 0.5);
+      border: 1px solid rgba(0, 212, 255, 0.28);
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .event-meta .date {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .event-meta .time {
+      margin-top: 4px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--cyan);
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .event-desc {
+      position: absolute;
+      left: 16px;
+      top: 250px;
+      width: 168px;
+      z-index: 3;
+      padding: 10px 12px;
+      background: rgba(3, 13, 26, 0.52);
+      border: 1px solid rgba(0, 212, 255, 0.24);
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .event-desc p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.68rem;
+      line-height: 1.45;
+      color: rgba(255,255,255,0.88);
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .ukm-logo {
+      position: absolute;
+      left: 16px;
+      bottom: 150px;
+      transform: none;
+      width: 100px;
+      background: #fff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      z-index: 3;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.4));
+      opacity: 0.95;
+    }
+
+    /* QR ROW: fixed to bottom */
+    .qr-row {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 46px;           /* above scroll hint */
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.28);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .qr-row img {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      background: #fff;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+
+    .qr-text strong {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .qr-text p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      color: var(--off-white);
+      line-height: 1.45;
+      font-weight: 300;
+    }
+
+    /* ── SCROLL HINT: very bottom ── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 0; right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    .scroll-hint span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.58rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .chevron-down {
+      width: 14px; height: 8px;
+      border-right: 1.5px solid rgba(0,212,255,0.5);
+      border-bottom: 1.5px solid rgba(0,212,255,0.5);
+      transform: rotate(45deg);
+      margin-top: -2px;
+    }
+
+    /* ════════════════════════════
+       SECTION 2 — REGISTER
+    ════════════════════════════ */
+    #s2 {
+      background: #04101f;
+      justify-content: center;
+    }
+
+    /* Ambient glow */
+    .s2-glow {
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(0,212,255,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Corner accents */
+    .corner {
+      position: absolute;
+      width: 44px; height: 44px;
+      border-color: rgba(0,212,255,0.22);
+      border-style: solid;
+    }
+    .c-tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; }
+    .c-br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; }
+
+    .s2-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .eyebrow {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--cyan);
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .reg-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--white);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+    }
+
+    .reg-heading em {
+      font-style: normal;
+      color: var(--cyan);
+    }
+
+    .reg-sub {
+      margin-top: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      color: var(--off-white);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .divider {
+      width: 40px; height: 2px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+      margin: 22px 0;
+    }
+
+    /* Form */
+    .field {
+      position: relative;
+      margin-bottom: 11px;
+    }
+
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 10px;
+      padding: 13px 44px 13px 16px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.86rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .field input::placeholder { color: rgba(255,255,255,0.28); }
+
+    .field input:focus {
+      border-color: var(--cyan);
+      background: rgba(0,212,255,0.05);
+    }
+
+    .field input.err { border-color: #ff4d6d !important; }
+
+    .field-icon {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 6px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #00c6e0 0%, #0066cc 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 20px rgba(0,212,255,0.25);
+    }
+
+    .privacy {
+      margin-top: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.22);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Success */
+    #success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding-top: 8px;
+    }
+
+    .success-icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      border: 1.5px solid var(--cyan);
+      background: rgba(0,212,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    #success h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--white);
+      letter-spacing: 0.04em;
+    }
+
+    #success p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      color: var(--off-white);
+      line-height: 1.6;
+      font-weight: 300;
+      max-width: 240px;
+    }
+
+    /* Animations */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(5px); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="snap-container">
+
+  <!-- ══════════ SECTION 1 ══════════ -->
+  <section id="s1">
+    <img class="bg" src="Background.png" alt="" />
+    <div class="bg-fade"></div>
+
+    <div class="s1-content">
+
+      <!-- TITLE -->
+      <div class="title-wrap">
+        <img src="Title.png" alt="Bridging Data and Decisions" />
+      </div>
+
+      <!-- SPEAKER (fills middle space) -->
+      <div class="speaker-wrap">
+        <img src="speaker2.png" alt="Faiz Fablillah" />
+      </div>
+      <div class="speaker-bio-bubble" aria-label="Speaker profile text">
+        <div class="name">Faiz Fablillah</div>
+        <div class="role">Senior Practitioner, Data &amp; AI Governance | DAMA Board Member</div>
+        <div class="exp">15+ years in Oil &amp; Gas, Banking, Manufacturing &amp; Financial Regulatory Sector</div>
+      </div>
+
+      <div class="event-meta">
+        <div class="date">JUNE 03, 2026</div>
+        <div class="time">10:00 - 11:30 AM</div>
+      </div>
+
+      <div class="event-desc">
+        <p>An industrial seminar organized by UKM Data Science students, focused on data governance, analytics, and better decision-making. Everyone is welcome to join online.</p>
+      </div>
+
+      <img class="ukm-logo" src="ukm_logo.png" alt="UKM Logo" />
+
+      <div class="qr-row">
+        <img src="qr.png" alt="QR Code to join" />
+        <div class="qr-text">
+          <strong>Scan to Join</strong>
+          <p>Secure your seat at this exclusive session on Data Governance &amp; Modern BI.</p>
+        </div>
+      </div>
+
+      <!-- SCROLL NUDGE -->
+      <div class="scroll-hint">
+        <span>Register below</span>
+        <div class="chevron-down"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ SECTION 2 ══════════ -->
+  <section id="s2">
+    <div class="s2-glow"></div>
+    <div class="corner c-tl"></div>
+    <div class="corner c-br"></div>
+
+    <div class="s2-content">
+      <div class="eyebrow">Exclusive Session</div>
+      <h2 class="reg-heading">Register<br/>Your <em>Interest</em></h2>
+      <p class="reg-sub">Leave your details and we'll keep you updated on session info, timing, and access links.</p>
+
+      <div class="divider"></div>
+
+      <div id="form-area">
+        <div class="field">
+          <input type="text" id="inp-name" placeholder="Your full name" autocomplete="name" />
+          <!-- person icon -->
+          <svg class="field-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
+          </svg>
+        </div>
+        <div class="field">
+          <input type="email" id="inp-email" placeholder="Your email address" autocomplete="email" />
+          <!-- envelope icon -->
+          <svg class="field-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+          </svg>
+        </div>
+        <button id="submit-btn" class="btn" onclick="handleSubmit()">Secure My Spot →</button>
+        <p id="form-msg" class="privacy" style="display:none;"></p>
+        <p class="privacy">We respect your privacy. No spam, ever.</p>
+      </div>
+
+      <div id="success">
+        <div class="success-icon">✦</div>
+        <h3>You're In!</h3>
+        <p>Thanks for registering. We'll be in touch with all the details soon.</p>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /snap-container -->
+
+<script>
+  const SHEET_ID = '13FQsK_-xXlgL_XTaTDWtlhSPCYZB5fgTK814ua0AlTg';
+  const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzZczXvZEccqro7OQlMeNXifDU6NEC98aYdmdqscSRYGOUbDbDfzz4-Nf77XFTwtf-Z/exec';
+
+  async function postRegistration(payload) {
+    const response = await fetch(SHEETS_WEB_APP_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.type !== 'opaque' && !response.ok) {
+      throw new Error('Request failed with status ' + response.status);
+    }
+  }
+
+  function setFormMessage(text, isError) {
+    const msg = document.getElementById('form-msg');
+    msg.textContent = text;
+    msg.style.display = text ? 'block' : 'none';
+    msg.style.color = isError ? '#ff9db0' : 'rgba(255,255,255,0.8)';
+  }
+
+  function showSuccess() {
+    document.getElementById('form-area').style.display = 'none';
+    const s = document.getElementById('success');
+    s.style.display = 'flex';
+    s.style.animation = 'fadeUp 0.6s ease both';
+  }
+
+  async function handleSubmit() {
+    const nameEl = document.getElementById('inp-name');
+    const emailEl = document.getElementById('inp-email');
+    const submitBtn = document.getElementById('submit-btn');
+    let ok = true;
+
+    setFormMessage('', false);
+    nameEl.classList.remove('err');
+    emailEl.classList.remove('err');
+
+    if (!nameEl.value.trim()) {
+      nameEl.classList.add('err');
+      nameEl.focus();
+      ok = false;
+    }
+
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim());
+    if (!emailOk) {
+      emailEl.classList.add('err');
+      if (ok) emailEl.focus();
+      ok = false;
+    }
+
+    if (!ok) return;
+
+    if (SHEETS_WEB_APP_URL.indexOf('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') !== -1) {
+      setFormMessage('Setup needed: add your Google Apps Script Web App URL in this file first.', true);
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    setFormMessage('Submitting your registration...', false);
+
+    const payload = {
+      sheetId: SHEET_ID,
+      name: nameEl.value.trim(),
+      email: emailEl.value.trim(),
+      submittedAt: new Date().toISOString(),
+      source: 'Seminar Landing Page'
+    };
+
+    try {
+      await postRegistration(payload);
+      showSuccess();
+    } catch (error) {
+      setFormMessage('Unable to submit right now. Please try again in a minute.', true);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Secure My Spot ->';
+    }
+  }
+
+  document.getElementById('inp-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+
+  document.getElementById('inp-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
